@@ -1,11 +1,9 @@
 #!/bin/bash
 
 declare -A catalog_comment_dict
-catalog_comment_dict=([Web]="Web框架" [Scrapy]="web爬取" [DevOps]="DevOps工具" [testing]="测试" [Hardware]="硬件" [DA]="科学计算与数据分析" [raw]="未翻译或者翻译到一半的内容" [ML]="机器学习" [Python Common]="Python常规文档" [NLP]="自然语言处理")
+catalog_comment_dict=([Web]="Web框架" [Scrapy]="web爬取" [DevOps]="DevOps工具" [testing]="测试" [Hardware]="硬件" [DA]="科学计算与数据分析" [raw]="未翻译或者翻译到一半的内容" [ML]="机器学习" [Python-Common]="Python常规文档" [NLP]="自然语言处理")
 
-catalogs=$(for catalog in ${!catalog_comment_dict[*]};do
-               echo $catalog
-           done |sort)
+catalogs=${!catalog_comment_dict[*]}
 
 function get_head()
 {
@@ -22,22 +20,19 @@ function get_contributors()
 {
     echo "## Contributors"
     echo "感谢GitHub以及:"
-    # for contributor in $(git log --pretty='%an<%ae>'|grep -viEw 'darksun|lujun9972' |sort|uniq)
-    # do
-    #     echo "+ $contributor"
-    # done
     git shortlog --summary --email |cut -f2|sed -e 's/^/+ /'
 }
 
 function generate_headline()
 {
-    local catalog=$1
-    echo "## " $catalog
-    echo ${catalog_comment_dict[$catalog]}
+    local catalog="$@"
+    echo "## " "$catalog"
+    echo ${catalog_comment_dict["$catalog"]}
     echo 
-    if [[ -d $catalog ]];then
-        generate_links $catalog |sort -t "<" -k2 -r
+    if [[ ! -d "$catalog" ]];then
+        mkdir -p $catalog
     fi
+    generate_links "$catalog" |sort -t "<" -k2 -r
 }
 
 function generate_links()
@@ -59,7 +54,7 @@ function generate_links()
 
 get_contributors
 
-for catalog in $catalogs
+for catalog in ${!catalog_comment_dict[*]}
 do
     generate_headline $catalog
 done
